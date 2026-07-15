@@ -32,6 +32,14 @@ public class TodoService : ITodoService
     {
         item.UserId = userId;
         item.CreatedAt = DateTime.UtcNow;
+
+        if (item.DueDate.HasValue)
+        {
+            item.DueDate = DateTime.SpecifyKind(
+                item.DueDate.Value,
+                DateTimeKind.Utc);
+        }
+
         _context.Todos.Add(item);
         await _context.SaveChangesAsync();
         return item;
@@ -41,12 +49,18 @@ public class TodoService : ITodoService
     {
         var existing = await _context.Todos
             .FirstOrDefaultAsync(i => i.Id == item.Id && i.UserId == userId);
-        if (existing is null) return false;
+
+        if (existing is null)
+            return false;
 
         existing.Title = item.Title;
         existing.Notes = item.Notes;
         existing.Priority = item.Priority;
-        existing.DueDate = item.DueDate;
+
+        existing.DueDate = item.DueDate.HasValue
+            ? DateTime.SpecifyKind(item.DueDate.Value, DateTimeKind.Utc)
+            : null;
+
         await _context.SaveChangesAsync();
         return true;
     }
