@@ -18,12 +18,18 @@ RUN dotnet publish -c Release -o /app/publish --no-restore
 # Runtime stage
 # ===========================
 FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS final
+
+ENV DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false
+
 WORKDIR /app
+
+
 
 COPY --from=build /app/publish .
 
 # Render sets the PORT environment variable.
 ENV ASPNETCORE_URLS=http://+:10000
+
 EXPOSE 10000
 
 ENTRYPOINT ["dotnet", "TodoApp.dll"]
