@@ -52,42 +52,4 @@ jobs:
 
           Write-Host ""
           Write-Host "ZIP file:"
-          Get-Item "${{ env.ZIP_OUTPUT_DIR }}\${{ env.ZIP_FILE_NAME }}"name: .NET Publish and Zip
-
-on:
-  workflow_dispatch:
-
-env:
-  PUBLISH_DIR: "C:/MyBuilds/build-output"
-  ZIP_OUTPUT_DIR: "C:/MyBuilds/archives"
-  ZIP_FILE_NAME: "dotnet-app.zip"
-
-jobs:
-  build-and-archive:
-    runs-on: [self-hosted, windows, runner-1]
-
-    steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'
-
-      - name: Restore Dependencies
-        run: dotnet restore
-
-      - name: Publish .NET Application
-        run: dotnet publish --configuration Release --output "${{ env.PUBLISH_DIR }}"
-
-      - name: Create Zip Directory
-        run: |
-          New-Item -ItemType Directory -Force -Path "${{ env.ZIP_OUTPUT_DIR }}"
-
-      - name: Compress
-        run: |
-          Compress-Archive `
-            -Path "${{ env.PUBLISH_DIR }}\*" `
-            -DestinationPath "${{ env.ZIP_OUTPUT_DIR }}\${{ env.ZIP_FILE_NAME }}" `
-            -Force
+          Get-Item "${{ env.ZIP_OUTPUT_DIR }}\${{ env.ZIP_FILE_NAME }}"
