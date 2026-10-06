@@ -1,55 +1,40 @@
 name: .NET Publish and Zip
 
 on:
-workflow_dispatch:
+  workflow_dispatch:
 
 env:
-PUBLISH_DIR: "C:/MyBuilds/publish"
-ZIP_DIR: "C:/MyBuilds/archives"
-ZIP_FILE: "dotnet-app.zip"
+  PUBLISH_DIR: "C:/MyBuilds/publish"
+  ZIP_DIR: "C:/MyBuilds/archives"
+  ZIP_FILE: "dotnet-app.zip"
 
 jobs:
-build-and-archive:
-runs-on: [self-hosted, windows, x64]
+  build-and-archive:
+    runs-on: [self-hosted, windows, x64]
 
-steps:
-  - name: Checkout Source Code
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
 
-  - name: Check .NET
-    run: |
-      dotnet --info
-      dotnet --list-sdks
+      - name: Check .NET
+        run: dotnet --info
 
-  - name: Restore Dependencies
-    run: dotnet restore
+      - name: Restore Dependencies
+        run: dotnet restore
 
-  - name: Publish .NET Application
-    run: |
-      dotnet publish `
-        --configuration Release `
-        --output "${{ env.PUBLISH_DIR }}"
+      - name: Publish .NET Application
+        run: dotnet publish -c Release -o $env:PUBLISH_DIR
 
-  - name: Create ZIP Directory
-    run: |
-      New-Item `
-        -ItemType Directory `
-        -Force `
-        -Path "${{ env.ZIP_DIR }}"
+      - name: Create ZIP Directory
+        run: New-Item -ItemType Directory -Force -Path $env:ZIP_DIR
 
-  - name: Zip Published Files
-    run: |
-      Compress-Archive `
-        -Path "${{ env.PUBLISH_DIR }}\*" `
-        -DestinationPath "${{ env.ZIP_DIR }}\${{ env.ZIP_FILE }}" `
-        -Force
+      - name: Zip Published Files
+        run: Compress-Archive -Path "$env:PUBLISH_DIR\*" -DestinationPath "$env:ZIP_DIR\$env:ZIP_FILE" -Force
 
-  - name: Show Output
-    run: |
-      Write-Host "Publish folder:"
-      Get-ChildItem "${{ env.PUBLISH_DIR }}"
-
-      Write-Host ""
-      Write-Host "ZIP file:"
-      Get-Item "${{ env.ZIP_DIR }}\${{ env.ZIP_FILE }}"
-```
+      - name: Show Output
+        run: |
+          Write-Host "Publish folder:"
+          Get-ChildItem $env:PUBLISH_DIR
+          Write-Host ""
+          Write-Host "ZIP file:"
+          Get-Item "$env:ZIP_DIR\$env:ZIP_FILE"
