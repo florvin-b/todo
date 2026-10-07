@@ -6,7 +6,6 @@ on:
 env:
   PUBLISH_DIR: "C:/MyBuilds/publish"
   ZIP_DIR: "C:/MyBuilds/archives"
-  ZIP_FILE: "dotnet-app.zip"
 
 jobs:
   build-and-archive:
@@ -28,13 +27,47 @@ jobs:
       - name: Create ZIP Directory
         run: New-Item -ItemType Directory -Force -Path $env:ZIP_DIR
 
+      - name: Create Timestamp
+        shell: powershell
+        run: |
+          $timestamp = Get-Date -Format "yyyy-MM-dd-HHmmss"
+          "ZIP_TIMESTAMP=$timestamp" >> $env:GITHUB_ENV
+
       - name: Zip Published Files
-        run: Compress-Archive -Path "$env:PUBLISH_DIR\*" -DestinationPath "$env:ZIP_DIR\$env:ZIP_FILE" -Force
+        shell: powershell
+        run: |
+          $zipFile = "$env:ZIP_DIR\dotnet-app-$env:ZIP_TIMESTAMP.zip"
+
+          Compress-Archive `
+            -Path "$env:PUBLISH_DIR\*" `
+            -DestinationPath $zipFile `
+            -Force
+
+          Write-Host "Created ZIP:"
+          Write-Host $zipFile
+
+      - name: Remove Old ZIP Archives
+        shell: powershell
+        run: |
+          $zipFiles = Get-ChildItem `
+            -Path $env:ZIP_DIR `
+            -Filter "dotnet-app-*.zip" `
+            -File |
+            Sort-Object LastWriteTime -Descending
+
+          if ($zipFiles.Count -gt 5) {
+              $zipFiles |
+                Select-Object -Skip 5 |
+                Remove-Item -Force
+          }
 
       - name: Show Output
+        shell: powershell
         run: |
           Write-Host "Publish folder:"
           Get-ChildItem $env:PUBLISH_DIR
+
           Write-Host ""
-          Write-Host "ZIP file:"
-          Get-Item "$env:ZIP_DIR\$env:ZIP_FILE"
+          Write-Host "ZIP archives:"
+          Get-ChildItem $env:ZIP_DIR -Filter "dotnet-app-*.zip" |
+            Sort-Object LastWriteTime -Descending
