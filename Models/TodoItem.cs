@@ -13,7 +13,7 @@ public class TodoItem
 {
     public int Id { get; set; }
 
-    [Required(ErrorMessage = "Please enter a task titles")]
+    [Required(ErrorMessage = "Please enter a task title")]
     [StringLength(200, ErrorMessage = "Title can't be longer than 200 characters")]
     public string Title { get; set; } = string.Empty;
 
